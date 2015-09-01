@@ -268,12 +268,14 @@ public class ResourceServiceImpl extends OperationAuthorizer implements Resource
 			resourceObject.put(RESOURCE, resource);
 		}
 		ContentMeta contentMeta =  this.getContentRepository().getContentMeta(resource.getContentId());
-		Object data = contentMeta.getMetaData();
-		if (data != null) {
+                if (contentMeta != null) { 
+	          Object data = contentMeta.getMetaData();
+		  if (data != null) { 
 			Map<String, Object> metaData = JsonDeserializer.deserialize(String.valueOf(data), new TypeReference<Map<String, Object>>() {
 			});
 			resourceObject.putAll(metaData);
-		}
+	          }
+                }
 		setContentProvider(resource);
 		return resourceObject;
 	}
