@@ -152,38 +152,38 @@ public class CommentServiceImpl extends BaseServiceImpl implements CommentServic
 		return result;
 	}
 
-	@Override
-	@Transactional(readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-	public void deleteComment(String commentUid, User user, Boolean softdelete) {
-		Comment comment = this.getCommentRepository().getComment(commentUid);
-		rejectIfNull(comment, GL0057, 404, COMMENT);
-		Content content = this.getResourceRepository().findResourceByContent(comment.getGooruOid());
-		List<String> contentPermissions = contentService.getContentPermission(content, user);
-		boolean hasPermission = false;
-		for (String contentPermission : contentPermissions) {
-			if (contentPermission.equalsIgnoreCase(EDIT)) {
-				hasPermission = true;
-				break;
-			}
-		}
-		if (!hasPermission && content != null && content.getUser().getPartyUid().equalsIgnoreCase(user.getPartyUid())) { 
-			hasPermission = true;
-		} else if (comment.getCommentorUid().getPartyUid().equalsIgnoreCase(content.getUser().getPartyUid())) { 
-			hasPermission = true;
-		}
-		
-		if (hasPermission) {
-			if (softdelete) {
-				comment.setIsDeleted(true);
-				this.getCommentRepository().save(comment);
-			} else {
-				this.getCommentRepository().remove(comment);
-			}
-		} else  {
-			throw new AccessDeniedException("Permission denied ");
-		} 
+    @Override
+    @Transactional(readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void deleteComment(String commentUid, User user, Boolean softdelete) {
+            Comment comment = this.getCommentRepository().getComment(commentUid);
+            rejectIfNull(comment, GL0057, 404, COMMENT);
+            Content content = this.getContentRepository().findContentByGooruId(comment.getGooruOid());
+            List<String> contentPermissions = contentService.getContentPermission(content.getGooruOid(), user);
+            boolean hasPermission = false;
+            for (String contentPermission : contentPermissions) {
+                    if (contentPermission.equalsIgnoreCase(EDIT)) {
+                            hasPermission = true;
+                            break;
+                    }
+            }
+            if (!hasPermission && content != null && content.getUser().getPartyUid().equalsIgnoreCase(user.getPartyUid())) { 
+                    hasPermission = true;
+            } else if (comment.getCommentorUid().getPartyUid().equalsIgnoreCase(user.getPartyUid())) { 
+                    hasPermission = true;
+            }
+            
+            if (hasPermission) {
+                    if (softdelete) {
+                            comment.setIsDeleted(true);
+                            this.getCommentRepository().save(comment);
+                    } else {
+                            this.getCommentRepository().remove(comment);
+                    }
+            } else  {
+                    throw new AccessDeniedException("Permission denied ");
+            } 
 
-	}
+    }
 	
 	@Override
 	public Boolean isContentOwner(String commentUid, User user) {
